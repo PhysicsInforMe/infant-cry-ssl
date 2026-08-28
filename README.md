@@ -28,10 +28,14 @@ Code and comments are in Italian. This README is the English entry point.
    nothing. End-to-end fine-tuning stops at 0.49. Whatever the labels
    contain, more capacity does not find it, which points at the labels.
 
-3. The leakage behind the published numbers is easy to measure. Switching
-   the same frozen embeddings from subject-wise to clip-wise splits moves
-   them from roughly 0.40 to roughly 0.60 AUC; the 90%+ papers additionally
-   train end-to-end on top of that leak.
+3. The published 90%+ numbers are reproducible without any cry-reason
+   signal. I re-ran my own fine-tuning under the literature's protocol,
+   changing nothing but the split. Clip-wise splits alone: 85.2% accuracy,
+   barely above the 83.8% you get by always answering "hungry". Clip-wise
+   splits with augmentation applied before splitting, which is the common
+   pipeline: 97.9% accuracy (0.976 AUC), matching the 96.4% state of the
+   art reported on this dataset, from the same model that measures 0.49
+   AUC when splits respect subject identity.
 
 4. Augmentation cannot stand in for subjects. I expanded the labeled set
    twentyfold with vocoder and noise-mixing variants (21 hours, class
@@ -142,6 +146,9 @@ Cry-reason probes on donateacry (5 classes, subject-wise):
 | Frozen HuBERT-base (capacity control) | 0.42 |
 | Same embeddings, clip-wise leaky split | 0.58–0.61 (HuBERT 0.61) |
 | End-to-end fine-tuning, best of 4 augmentation arms | 0.49 ± 0.11 |
+| End-to-end, clip-wise split (leaky, diagnostic) | 0.70 (85.2% accuracy) |
+| End-to-end, clip-wise + augment-before-split (leaky) | 0.976 (97.9% accuracy) |
+| Majority-class baseline (always "hungry") | 83.8% accuracy |
 | Reference: Gorin et al., clinical labels, 3 classes | 74.5 |
 
 The fine-tuning ablation (real-only / +noise / +vocoder / +both: 0.47 /

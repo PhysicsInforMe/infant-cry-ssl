@@ -133,6 +133,10 @@ def main() -> int:
     parser.add_argument("--passi", type=int, default=1500)
     parser.add_argument("--batch", type=int, default=128)
     parser.add_argument("--lr", type=float, default=0.0003)
+    parser.add_argument("--split", default="bambino", choices=["bambino", "clip"],
+                        help="'clip' = split VOLUTAMENTE leaky per clip, come nella "
+                             "letteratura che riporta 90%%+: serve a DIMOSTRARE il "
+                             "leakage, mai a valutare davvero")
     argomenti = parser.parse_args()
     cfg = {"passi": argomenti.passi, "batch": argomenti.batch, "lr": argomenti.lr}
 
@@ -171,13 +175,25 @@ def main() -> int:
     gruppi = np.array([v.contributore for v in reali])
     indice_classe = {c: i for i, c in enumerate(CLASSI)}
 
-    cv = StratifiedGroupKFold(n_splits=5, shuffle=True, random_state=0)
-    auc5, bal5, ece5, auc3 = [], [], [], []
-    for numero_fold, (train, test) in enumerate(
-            cv.split(np.zeros(len(y)), y, groups=gruppi)):
+    if argomenti.split == "clip":
+        # Split per clip: lo stesso bambino può stare in train e in test.
+        # È il protocollo (sbagliato) della letteratura a 90%+: lo replichiamo
+        # per misurare quanto vale il leakage, con accuratezza extra: i
+        # sintetici entrano col criterio "bambino in train", che qui replica
+        # anche l'errore augment-then-split (varianti del clip di test in train).
+        from sklearn.model_selection import StratifiedKFold
+        cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=0)
+        divisioni = cv.split(np.zeros(len(y)), y)
+    else:
+        cv = StratifiedGroupKFold(n_splits=5, shuffle=True, random_state=0)
+        divisioni = cv.split(np.zeros(len(y)), y, groups=gruppi)
+
+    auc5, bal5, ece5, auc3, acc5 = [], [], [], [], []
+    for numero_fold, (train, test) in enumerate(divisioni):
         bambini_train = set(gruppi[train])
         voci_train = [(reali[i], indice_classe[reali[i].classe]) for i in train]
         # Sintetici ammessi: solo se il bambino di origine sta nel train
+        # (nello split per clip questo NON protegge: è il punto della simulazione)
         voci_train += [(v, indice_classe[v.classe]) for v in sintetici
                        if v.contributore in bambini_train]
         modello = addestra_fold(voci_train, cache, stato_encoder, cfg, device)
@@ -190,8 +206,11 @@ def main() -> int:
                                       average="macro", labels=CLASSI))
         except ValueError:
             auc5.append(np.nan)
-        bal5.append(balanced_accuracy_score(
-            y_test, [CLASSI[i] for i in prob.argmax(axis=1)]))
+        predette = np.array([CLASSI[i] for i in prob.argmax(axis=1)])
+        bal5.append(balanced_accuracy_score(y_test, predette))
+        # Accuracy semplice: e' la metrica riportata dalla letteratura a 90%+,
+        # va confrontata con la baseline di maggioranza (84% "hungry")
+        acc5.append(float((predette == y_test).mean()))
         ece5.append(calcola_ece(prob, np.searchsorted(CLASSI, y_test)))
         # Variante a 3 classi: si rinormalizzano le probabilità sulle 3
         m3 = np.isin(y_test, TRE_CLASSI)
@@ -209,20 +228,25 @@ def main() -> int:
 
     riga = {"quando": datetime.now().strftime("%Y-%m-%d %H:%M"),
             "candidato": argomenti.candidato, "sintetici": argomenti.sintetici,
-            "passi": cfg["passi"],
+            "split": argomenti.split, "passi": cfg["passi"],
             "auc5": f"{np.nanmean(auc5):.4f}", "auc5_std": f"{np.nanstd(auc5):.4f}",
-            "bal5": f"{np.mean(bal5):.4f}", "ece5": f"{np.mean(ece5):.4f}",
+            "bal5": f"{np.mean(bal5):.4f}", "acc5": f"{np.mean(acc5):.4f}",
+            "ece5": f"{np.mean(ece5):.4f}",
             "auc3": f"{np.nanmean(auc3):.4f}", "auc3_std": f"{np.nanstd(auc3):.4f}"}
-    percorso = RADICE / "results" / "finetuning_results.csv"
+    # Le corse leaky vanno in un file separato: non devono mai mescolarsi
+    # con i risultati validi
+    nome_csv = ("finetuning_results.csv" if argomenti.split == "bambino"
+                else "finetuning_leaky.csv")
+    percorso = RADICE / "results" / nome_csv
     nuovo = not percorso.exists()
     with open(percorso, "a", newline="", encoding="utf-8") as f:
         scrittore = csv.DictWriter(f, fieldnames=list(riga.keys()))
         if nuovo:
             scrittore.writeheader()
         scrittore.writerow(riga)
-    log.info("RISULTATO %s: AUC5 %s ±%s  bal %s  ECE %s  AUC3 %s",
-             argomenti.sintetici, riga["auc5"], riga["auc5_std"], riga["bal5"],
-             riga["ece5"], riga["auc3"])
+    log.info("RISULTATO %s/%s: AUC5 %s ±%s  bal %s  acc %s  AUC3 %s",
+             argomenti.sintetici, argomenti.split, riga["auc5"], riga["auc5_std"],
+             riga["bal5"], riga["acc5"], riga["auc3"])
     return 0
 
 
