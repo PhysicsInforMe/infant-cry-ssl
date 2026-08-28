@@ -28,3 +28,6 @@ __pycache__/
 *.tflite
 .DS_Store
 Thumbs.db
+
+# Note di lavoro locali (mai su GitHub)
+privato/
