@@ -1,0 +1,30 @@
+# Dati, cache e checkpoint: mai su git (dimensioni e licenze, vedi README).
+# Si usa dir/* e non dir/ perche' git non applica le eccezioni (!)
+# dentro una directory ignorata per intero.
+data/*
+cache/*
+checkpoints/*
+
+# Eccezioni: i .gitkeep e il manifest licenze (deliverable testuale) vanno versionati
+!data/.gitkeep
+!data/licenses_manifest.csv
+!cache/.gitkeep
+!checkpoints/.gitkeep
+
+# Tool esterni portable (binari, non si committano)
+tools/
+
+# Ambiente Python
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.egg-info/
+
+# Artefatti vari
+*.pt
+*.pth
+*.onnx
+*.tflite
+.DS_Store
+Thumbs.db

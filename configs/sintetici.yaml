@@ -1,0 +1,56 @@
+# Configurazione della generazione di varianti sintetiche (script 04).
+# Due tecniche (vedi README):
+# - vocoder: pitch shift + spostamento delle formanti (PSOLA via Praat),
+#   simula un bambino di taglia diversa; la traccia temporale resta identica;
+# - rumore: miscela il pianto originale con rumore domestico dal pool FSD50K
+#   (solo clip gia' ammesse dal filtro licenze) a SNR variabile.
+# REGOLE NON NEGOZIABILI: ogni sintetico eredita il contributore del clip di
+# origine (split per bambino!) e la valutazione gira SOLO su audio reale.
+
+seed: 20260825                 # riproducibilita' della generazione
+cartella_uscita: data/sintetici
+manifest_uscita: data/sintetici_manifest.csv
+sample_rate: 16000
+
+# Obiettivo di volume: ore per classe (5 classi x 4.2 h = 21 h totali, >20)
+ore_target_per_classe: 4.2
+# Quota della tecnica vocoder sul totale (il resto e' rumore)
+quota_vocoder: 0.5
+
+# Parametri vocoder
+pitch_semitoni_min: 0.5        # modulo minimo dello shift (sotto = quasi duplicato)
+pitch_semitoni_max: 3.0        # modulo massimo (oltre si rischia di alterare la classe)
+formanti_alpha_min: 0.88       # spostamento formanti: <1 tratto vocale piu' lungo
+formanti_alpha_max: 1.12       # >1 tratto vocale piu' corto (bimbo piu' piccolo)
+f0_floor: 150                  # Hz, banda di analisi del pitch (pianto 250-700)
+f0_ceil: 1000
+
+# Parametri rumore
+snr_db_min: 3                  # rapporto segnale/rumore minimo (rumore forte)
+snr_db_max: 20                 # massimo (rumore appena percettibile)
+
+# Selezione del pool di rumore dalle etichette ground-truth di FSD50K
+# (match per sottostringa, case-insensitive)
+rumore_includi:
+  - speech
+  - television
+  - dog
+  - cat
+  - vacuum
+  - dishes
+  - water_tap
+  - microwave
+  - traffic
+  - rain
+  - washing
+  - doorbell
+  - telephone
+  - kettle
+  - frying
+  - door
+rumore_escludi:
+  - baby
+  - infant
+  - child
+  - crying
+  - scream

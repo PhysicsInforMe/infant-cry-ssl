@@ -1,0 +1,37 @@
+# Requirements dello studio (pipeline di ricerca su PC).
+# Python 3.11+. Le build CUDA di torch/torchaudio arrivano dall'indice ufficiale
+# PyTorch (riga --extra-index-url sotto): il training gira SEMPRE sulla GPU.
+--extra-index-url https://download.pytorch.org/whl/cu126
+
+# Deep learning (build CUDA 12.6 per la RTX 4060 Laptop)
+torch==2.6.0+cu126
+torchaudio==2.6.0+cu126
+
+# Numerica e audio I/O
+# (numpy aggiornato alla 2.x il 25/8 per la catena librosa/numba di
+# panns-inference; compatibilita' verificata con torch 2.6, parselmouth,
+# matplotlib e streamlit)
+numpy==2.5.2
+soundfile==0.12.1
+
+# Config, metriche, utilita'
+pyyaml==6.0.2
+scikit-learn==1.6.1
+tqdm==4.67.1
+
+# Download dei corpora (script 01): HTTP con resume e API Zenodo
+requests==2.32.3
+
+# App di esplorazione dati (scripts/esplora_dati_app.py)
+streamlit==1.41.1
+matplotlib==3.9.2
+
+# Generazione varianti sintetiche (script 04): motore Praat via parselmouth.
+# NOTA licenza: GPL-3, ma e' solo un tool di SVILUPPO per generare dati di
+# training — non entra nel modello finale (pyworld,
+# MIT, non ha wheel per Python 3.12 su Windows).
+praat-parselmouth==0.4.7
+
+# Triage pianto/non-pianto (script 05): tagger PANNs Cnn14 su AudioSet.
+# Codice MIT; il checkpoint (CC BY 4.0, Zenodo 3987831) lo scarica lo script.
+panns-inference==0.1.1

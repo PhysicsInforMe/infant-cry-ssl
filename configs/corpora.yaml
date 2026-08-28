@@ -1,0 +1,67 @@
+# Configurazione dei corpora per lo script 01_download_corpora.py.
+# Vincolo di progetto: solo corpora con licenza permissiva verificata clip per clip (vedi README).
+# MAI CryCeleb (licenza accademica), MAI audio da YouTube (AudioSet/VGGSound).
+
+# Cartella di destinazione dei download (relativa alla radice del repo)
+cartella_dati: data/raw
+
+corpora:
+
+  # FSD50K: ~51k clip, 100+ ore, licenze CC per clip (CC0 / CC BY / CC BY-NC).
+  # Ospitato su Zenodo: i checksum md5 ufficiali vengono letti a runtime
+  # dall'API del record, quindi non vanno mantenuti a mano qui.
+  fsd50k:
+    enabled: true
+    tipo: zenodo
+    zenodo_record: 4060432
+    # Eventuali file del record da saltare (nomi esatti); vuoto = scarica tutto.
+    files_esclusi: []
+    # Filtro licenze applicato poi dallo script 02 (qui solo documentato)
+    licenze_ammesse: ["CC0", "CC BY"]
+
+  # VocalSound: 21k vocalizzi umani non verbali, CC BY-SA 4.0 sull'intero corpus.
+  # Fonte effettiva: mirror Zenodo (record 14650192, re-upload di Xiaomi in
+  # formato WebDataset: 60 tar di coppie wav+json coi filename originali del
+  # MIT, md5 verificati via API). Scelto il 25/8/2026 perche' i link Dropbox
+  # ufficiali del repo https://github.com/YuanGongND/vocalsound risultano
+  # "Temporarily Disabled". NOTA licenze: il record Zenodo e' etichettato
+  # CC BY, ma un mirror non puo' rilicenziare — fa fede la CC BY-SA 4.0
+  # dell'originale MIT, ed e' quella che finisce nel manifest.
+  vocalsound:
+    enabled: true
+    tipo: zenodo
+    zenodo_record: 14650192
+    files_esclusi: []
+    licenza_corpus: "CC BY-SA 4.0"
+
+  # donateacry-corpus: 457 clip pulite etichettate + raw, ODbL / DbCL.
+  # Snapshot del ramo master da GitHub (nessun checksum stabile lato server:
+  # come sopra, il checksum viene calcolato e registrato al primo download).
+  donateacry:
+    enabled: true
+    tipo: http
+    licenza_corpus: "ODbL 1.0 / DbCL 1.0"
+    files:
+      - nome: donateacry-corpus-master.zip
+        url: "https://github.com/gveres/donateacry-corpus/archive/refs/heads/master.zip"
+        md5: null
+
+  # Freesound (query dirette): pianto vero per l'adattamento di dominio SSL
+  # e per il detector di stadio 1. Richiede una API key personale (gratuita),
+  # che sta in un FILE LOCALE fuori da git (mai nella config!).
+  # NOTA: con l'autenticazione a token si scaricano i preview HQ mp3 (44.1 kHz,
+  # ~128 kbps), qualita' ampiamente sufficiente per il log-mel a 16 kHz;
+  # l'originale richiederebbe OAuth2 interattivo, inutile qui.
+  freesound:
+    enabled: true
+    tipo: freesound_api
+    api_key_file: data/freesound_api_key.txt   # file locale gitignorato
+    query:
+      - "baby cry"
+      - "infant cry"
+      - "newborn cry"
+      - "baby crying"
+    licenze_ammesse: ["CC0", "CC BY"]
+    durata_min_s: 0.5
+    durata_max_s: 120
+    max_risultati_per_query: 500

@@ -1,0 +1,18 @@
+# Front-end audio (README) usato dallo script 03_build_mel_cache.py.
+# Log-mel 64 bande a 16 kHz mono; la normalizzazione per clip NON è applicata
+# in cache (si applica al load in training, usando media/dev_std salvate nell'indice).
+
+sample_rate: 16000        # Hz; la F0 del pianto (250-700 Hz) e le armoniche utili ci stanno
+n_mels: 64                # bande mel
+finestra_ms: 25           # finestra STFT in millisecondi -> n_fft = 400 campioni
+hop_ms: 10                # hop STFT in millisecondi -> hop = 160 campioni
+f_min: 50                 # Hz, taglia il rumble sotto la banda utile
+f_max: 8000               # Hz, Nyquist a 16 kHz
+log_eps: 1.0e-6           # epsilon dentro il logaritmo per stabilita' numerica
+
+# Parametri usati a valle (training), documentati qui per coerenza
+patch_secondi: 3.0        # lunghezza delle patch estratte dalla cache
+dtype_cache: float16      # dtype dei file .dat memory-mapped
+
+# Percorsi (relativi alla radice del repo)
+cartella_cache: cache/mel

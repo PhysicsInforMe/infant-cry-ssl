@@ -1,0 +1,37 @@
+# Configurazione del bake-off dei pretext task (vedi README).
+# Stesso encoder, stesso budget, stessa valutazione per tutti i candidati A-F:
+# le opinioni si chiudono coi numeri.
+
+seed: 20260826
+
+# Dati di pretraining: SOLO il pool generico (niente donateacry ne' freesound:
+# il pianto resta per l'adattamento di dominio e per le probe — regola anti
+# leakage del README)
+corpora_pretraining: [fsd50k, vocalsound]
+
+# Budget identico per ogni candidato (run ~15-30 min sulla RTX 4060)
+passi_totali: 8000
+batch: 256
+lr: 0.001
+weight_decay: 0.05
+warmup_passi: 500          # rampa lineare, poi coseno fino a zero
+
+# Patch (coerente con audio_frontend.yaml: 3 s a hop 10 ms)
+patch_frame: 300
+
+# Logistica dei run
+device: cuda               # SEMPRE GPU (regola di progetto), AMP attivo
+log_ogni: 200              # passi tra i log della loss
+checkpoint_ogni: 1000      # passi tra i salvataggi (resume su laptop)
+cartella_checkpoint: checkpoints/bakeoff
+risultati: results/bakeoff_results.csv
+
+# Adattamento di dominio SSL sul pool di pianto (script 10, vedi README).
+# Protocollo anti-leakage: per OGNI fold della probe, l'adattamento usa solo
+# i clip donateacry dei bambini di train di quel fold (Freesound/FSD50K sono
+# persone diverse dai bambini di donateacry, quindi sicuri in tutti i fold).
+adattamento:
+  passi: 1500              # budget per fold (pool piccolo: bastano)
+  lr: 0.0003               # più basso del pretraining: si rifinisce, non si riparte
+  batch: 192
+  risultati: results/adattamento_results.csv

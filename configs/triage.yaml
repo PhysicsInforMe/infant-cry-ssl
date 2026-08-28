@@ -1,0 +1,30 @@
+# Configurazione del triage pianto/non-pianto (script 05).
+# Tagger: PANNs Cnn14 pre-addestrato su AudioSet (codice MIT, checkpoint
+# CC BY 4.0 dal record Zenodo 3987831 — licenza verificata il 25/8/2026).
+# Uso di sviluppo: annota ogni clip del pool con le probabilità delle classi
+# AudioSet rilevanti; il motivo del pianto NON c'entra (qui è solo
+# presenza/assenza di pianto, il motivo resta ancorato agli esiti osservabili).
+
+# Checkpoint (scaricato dallo script con md5 ufficiale via API Zenodo)
+zenodo_record: 3987831
+checkpoint_nome: "Cnn14_mAP=0.431.pth"
+cartella_checkpoint: checkpoints/panns
+
+# Inferenza
+device: cuda            # il tagger gira sulla GPU (regola di progetto)
+sample_rate: 32000      # Cnn14 e' addestrato a 32 kHz: si ricampiona in ingresso
+durata_max_s: 30        # i clip piu' lunghi si troncano (FSD50K arriva a 30 s)
+
+# Classi AudioSet da salvare nel CSV (nome colonna -> etichetta AudioSet)
+classi_interesse:
+  p_pianto_neonato: "Baby cry, infant cry"
+  p_pianto_generico: "Crying, sobbing"
+  p_lamento: "Whimper"
+  p_parlato: "Speech"    # utile per lo scrubbing privacy futuro
+
+# Soglie di lettura (per i riepiloghi e per la pulizia del pool di rumore)
+soglia_pianto: 0.5       # sopra: il clip contiene quasi certamente pianto
+soglia_sospetto: 0.3     # zona grigia, da revisione
+
+# Uscita
+uscita: data/triage_panns.csv
