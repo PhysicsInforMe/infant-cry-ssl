@@ -85,6 +85,8 @@ Of the 15 lowest-scoring donateacry "cries", 11 were not cries at all.
 
 ## Method
 
+![Study design: one encoder, six pretext heads, subject-wise downstream evaluation](results/fig_architecture.png)
+
 The encoder is a 4-stage CNN (two 3x3 convolutions per stage, BatchNorm,
 stride 2), global average pooling, 256-d embedding: 1.17M parameters, sized
 for edge deployment on purpose. Every candidate uses this same encoder and
