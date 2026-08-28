@@ -155,6 +155,15 @@ The fine-tuning ablation (real-only / +noise / +vocoder / +both: 0.47 /
 0.46 / 0.43 / 0.49) shows the arms statistically indistinguishable, which
 is finding 4.
 
+![The leakage ladder: same model and data under three split protocols](results/fig_leakage.png)
+
+The figure condenses the leakage argument. Left: one model, one dataset,
+three split protocols. Right: the leaky protocols land on the published
+accuracy range, and the majority-class baseline shows how little that
+range means. Numbers in `results/finetuning_results.csv` and
+`results/finetuning_leaky.csv`; the leaky runs use `--split clip` in
+script `12`.
+
 ## Against prior work
 
 What this study confirms independently, on public data, with 1/70th of the
