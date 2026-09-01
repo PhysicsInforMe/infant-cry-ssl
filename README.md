@@ -1,11 +1,13 @@
 # Self-Supervised Pretext Tasks for Infant Cry Analysis
 
+Paper: [arXiv:2608.30456](https://arxiv.org/abs/2608.30456)
+
 A single-GPU study of self-supervised learning (SSL) for infant cry
 acoustics, built only on public data whose licenses I verified clip by clip.
 It reproduces the central conclusions of Gorin et al. (Ubenwa Health, ICASSP
 2023) with an encoder about 70 times smaller, and adds a result I could not
 find anywhere in the literature: under subject-wise evaluation, donateacry,
-the only public dataset with cry-reason labels, does not support reason
+the de facto public benchmark for cry reasons, does not support reason
 classification at all. The 90%+ accuracies reported on it come from
 clip-level splits. This repository reproduces that leakage and measures it.
 
@@ -245,8 +247,24 @@ point (false alarms per night at fixed recall) and running a systematic
 multi-SNR evaluation are mechanical follow-ups the harness already
 supports.
 
+## Citation
+
+```bibtex
+@misc{simeone2026infantcry,
+  title         = {Self-Supervised Pretext Tasks for Infant Cry Analysis:
+                   A Controlled Comparison and a Cautionary Result on Donateacry},
+  author        = {Luigi Simeone},
+  year          = {2026},
+  eprint        = {2608.30456},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.LG}
+}
+```
+
 ## References
 
+- Simeone, *Self-Supervised Pretext Tasks for Infant Cry Analysis*, 2026 —
+  [arXiv:2608.30456](https://arxiv.org/abs/2608.30456) (this work)
 - Gorin et al., *Self-supervised learning for infant cry analysis*, ICASSP
   2023 SASB workshop — [arXiv:2305.01578](https://arxiv.org/abs/2305.01578)
 - Fonseca et al., *FSD50K: an open dataset of human-labeled sound events* —
